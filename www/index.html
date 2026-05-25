@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#020617" />
+  <title>Nexory</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div id="splash" class="splash" aria-hidden="true">
+    <div class="splash__orbit" aria-hidden="true">
+      <div class="splash__orbit-frame">
+        <span class="splash__comet splash__comet--1"></span>
+        <span class="splash__comet splash__comet--2"></span>
+        <span class="splash__comet splash__comet--3"></span>
+      </div>
+    </div>
+    <img class="splash__logo" src="assets/nexory-icon.png" alt="" />
+    <p class="splash__name">Nexory</p>
+  </div>
+  <div id="app-bg"></div>
+  <div id="home-edge-glow" class="home-edge-glow" aria-hidden="true">
+    <span class="home-edge-glow__dot home-edge-glow__dot--1"></span>
+    <span class="home-edge-glow__dot home-edge-glow__dot--2"></span>
+  </div>
+  <div id="app-orbs" class="app-orbs" aria-hidden="true">
+    <div class="app-orb app-orb--1"></div>
+    <div class="app-orb app-orb--2"></div>
+    <div class="app-orb app-orb--3"></div>
+    <div class="app-orb app-orb--4"></div>
+    <div class="app-orb app-orb--5"></div>
+    <div class="app-orb app-orb--6"></div>
+  </div>
+  <div id="setup-gate" class="setup-gate" hidden>
+    <div class="setup-gate__scroll safe-top safe-bottom">
+      <img class="setup-gate__logo" src="assets/nexory-icon.png" alt="Nexory" />
+      <h1 class="setup-gate__title">Nexory</h1>
+      <p class="setup-gate__text">Гибрид: токены Яндекс/VK — поиск и волна с телефона. Gateway на VPS (Timeweb) — импорт и SoundCloud.</p>
+      <label class="field"><span>Режим API</span>
+        <select id="gate-api-mode">
+          <option value="auto">Авто (сначала с телефона)</option>
+          <option value="direct">Только с телефона</option>
+          <option value="gateway">Только gateway</option>
+        </select>
+      </label>
+      <input type="hidden" id="gate-gateway" />
+      <input type="hidden" id="gate-secret" />
+      <button type="button" class="secondary-btn" id="gate-test">Проверить сервер</button>
+      <small class="field-hint" id="gate-status"></small>
+      <label class="field"><span>Яндекс OAuth</span><textarea id="gate-yandex" rows="2" placeholder="OAuth токен"></textarea></label>
+      <label class="field"><span>VK token</span><input type="password" id="gate-vk" placeholder="опционально" autocomplete="off" /></label>
+      <button type="button" class="primary-btn" id="gate-save">Сохранить и продолжить</button>
+      <button type="button" class="link-btn setup-gate__skip" id="gate-skip">Пропустить — смотреть UI</button>
+    </div>
+  </div>
+
+  <div id="app">
+    <header class="top-bar" id="top-bar">
+      <div class="top-bar__brand">
+        <img class="brand-mark" src="assets/nexory-icon.png" alt="" />
+        <span class="brand-pixel">Nexory</span>
+      </div>
+      <button type="button" class="icon-btn" id="btn-search-open" aria-label="Поиск" data-icon="search"></button>
+    </header>
+
+    <main id="screens">
+      <section class="screen screen--active" data-screen="home">
+        <div class="home-scroll-inner" id="home-scroll-inner">
+        <div id="gateway-banner" class="status-banner" hidden></div>
+        <div class="home-hero">
+          <div class="home-wave-shell ui-shell">
+          <button type="button" class="wave-row" id="btn-wave-play" aria-label="Моя волна">
+            <div class="wave-row__main">
+              <span class="wave-row__play" id="wave-play-btn"><span data-icon="play" data-icon-class="ui-icon"></span></span>
+              <span class="wave-row__body">
+                <span class="wave-row__title">Моя волна</span>
+              </span>
+            </div>
+            <span class="wave-row__lines" aria-hidden="true">
+              <svg class="wave-fine-lines__svg" viewBox="0 0 720 92" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <g class="wave-fine-lines__g wave-fine-lines__g--1">
+                  <path fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="1.35" d="M0,50 C160,24 320,76 480,50 S800,24 960,50 S1120,76 1280,50 S1440,24 1440,50"/>
+                  <g transform="translate(1440 0)"><path fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="1.35" d="M0,50 C160,24 320,76 480,50 S800,24 960,50 S1120,76 1280,50 S1440,24 1440,50"/></g>
+                </g>
+                <g class="wave-fine-lines__g wave-fine-lines__g--2">
+                  <path fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.35" d="M0,66 C160,90 320,42 480,66 S800,90 960,66 S1120,42 1280,66 S1440,90 1440,66"/>
+                  <g transform="translate(1440 0)"><path fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.35" d="M0,66 C160,90 320,42 480,66 S800,90 960,66 S1120,42 1280,66 S1440,90 1440,66"/></g>
+                </g>
+                <g class="wave-fine-lines__g wave-fine-lines__g--3">
+                  <path fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="1.35" d="M0,34 C160,10 320,58 480,34 S800,10 960,34 S1120,58 1280,34 S1440,10 1440,34"/>
+                  <g transform="translate(1440 0)"><path fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="1.35" d="M0,34 C160,10 320,58 480,34 S800,10 960,34 S1120,58 1280,34 S1440,10 1440,34"/></g>
+                </g>
+              </svg>
+            </span>
+          </button>
+          <div class="wave-moods" id="wave-moods" role="group" aria-label="Настроение волны"></div>
+          </div>
+        </div>
+        <div class="section section--home-plaques">
+          <div class="home-plaques">
+            <button type="button" class="home-plaque" id="btn-home-recent">
+              <span class="home-plaque__covers" id="home-recent-covers"></span>
+              <span class="home-plaque__meta">
+                <span class="home-plaque__title">Недавние</span>
+                <span class="home-plaque__count" id="home-recent-count">0 треков</span>
+              </span>
+            </button>
+            <button type="button" class="home-plaque home-plaque--likes" id="btn-home-likes-play">
+              <span class="home-plaque__covers" id="home-likes-covers"></span>
+              <span class="home-plaque__meta">
+                <span class="home-plaque__title">Любимые</span>
+                <span class="home-plaque__count" id="home-likes-count">0 треков</span>
+              </span>
+            </button>
+          </div>
+        </div>
+        <div class="section section--home-sc">
+          <h2 class="section-title--pixel pixel-text">Популярные треки</h2>
+          <div class="h-scroll home-sc-scroll" id="home-popular-scroll" data-track-list></div>
+        </div>
+        <div class="section section--home-sc">
+          <h2 class="section-title--pixel pixel-text">Миксы</h2>
+          <div class="h-scroll home-sc-scroll" id="home-mixes-scroll" data-track-list></div>
+        </div>
+        <div class="section section--home-sc">
+          <h2 class="section-title--pixel pixel-text">Новинки</h2>
+          <div class="h-scroll home-sc-scroll" id="home-new-scroll" data-track-list></div>
+        </div>
+        <div class="section section--home-stats">
+          <div class="home-stats-board" id="home-stats-board" aria-label="Статистика прослушивания">
+            <div class="home-stats-card">
+              <span class="home-stats-card__value pixel-text" id="home-stats-tracks">0</span>
+              <span class="home-stats-card__label">треков</span>
+            </div>
+            <div class="home-stats-card home-stats-card--time">
+              <span class="home-stats-card__value pixel-text" id="home-stats-time">0 м</span>
+              <span class="home-stats-card__label">в эфире</span>
+            </div>
+          </div>
+        </div>
+        <div class="home-scroll-spacer" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="search">
+        <div class="ui-shell search-shell">
+          <div class="search-hero">
+            <h1 class="search-hero__title">Поиск</h1>
+            <p class="search-hero__sub">Яндекс · VK · SoundCloud</p>
+          </div>
+          <div class="search-box">
+            <span class="search-box__icon" data-icon="search"></span>
+            <input type="search" id="search-input" placeholder="Трек, артист..." autocomplete="off" enterkeyhint="search" />
+            <button type="button" class="search-clear" id="search-clear" hidden>×</button>
+            <button type="button" class="search-source-btn" id="search-source-btn" aria-label="Источник поиска" aria-haspopup="listbox"></button>
+          </div>
+        </div>
+        <div class="search-status" id="search-status"></div>
+        <div class="v-list v-list--tracks" id="search-results" data-track-list></div>
+      </section>
+
+      <section class="screen" data-screen="library">
+        <div class="lib-hero">
+          <button type="button" class="favorites-card" id="btn-open-likes">
+            <span class="favorites-card__icon" data-icon="heart"></span>
+            <div class="favorites-card__text">
+              <div class="favorites-card__title">Любимые</div>
+              <div class="favorites-card__count" id="likes-count">0 треков</div>
+            </div>
+          </button>
+        </div>
+        <button type="button" class="import-row ui-shell" id="btn-import-open">
+          <span class="import-row__icon" data-icon="download"></span>
+          <div class="import-row__text">
+            <div class="import-row__title">Импортировать из сервиса</div>
+            <div class="import-row__sub">Яндекс · VK · SoundCloud · файл</div>
+          </div>
+        </button>
+        <div class="lib-toolbar ui-shell lib-toolbar--shell">
+          <button type="button" class="lib-tool-btn" id="btn-create-playlist" aria-label="Создать" data-icon="plus"></button>
+          <span class="lib-pill lib-pill--active">Плейлисты</span>
+        </div>
+        <div class="playlist-grid" id="library-playlists"></div>
+      </section>
+
+      <section class="screen" data-screen="settings">
+        <div class="screen-head">
+          <h1 class="screen-title">Настройки</h1>
+        </div>
+        <div class="settings-switch">
+          <button type="button" class="settings-switch__btn settings-switch__btn--active" data-settings-pane="custom">Кастомизация</button>
+          <button type="button" class="settings-switch__btn" data-settings-pane="services">Сервисы</button>
+        </div>
+
+        <div id="settings-custom" class="settings-pane">
+          <div class="settings-group">
+            <h3 class="settings-label">Тема</h3>
+            <div class="theme-cards" id="theme-grid"></div>
+          </div>
+          <label class="toggle-row">
+            <div class="toggle-row__text">
+              <span class="toggle-row__label">Тема из обложки</span>
+              <span class="toggle-row__hint">Фон, акценты и карточки под цвета обложки трека</span>
+            </div>
+            <input type="checkbox" class="toggle-row__input" id="cfg-accent-cover" />
+          </label>
+          <div class="settings-group">
+            <h3 class="settings-label">Обложка трека</h3>
+            <p class="settings-hint">Квадратная обложка в mini и full player</p>
+            <div class="settings-media-row">
+              <div class="player-cover-preview player-cover-preview--lg" id="player-cover-preview">
+                <span class="player-cover-preview__ph" data-icon="image" data-icon-class="ui-icon lg"></span>
+              </div>
+              <div class="settings-media-actions">
+                <button type="button" class="secondary-btn" id="cfg-player-cover-pick">Выбрать обложку</button>
+                <button type="button" class="link-btn settings-clear-link" id="cfg-player-cover-clear">Сбросить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="settings-services" class="settings-pane" hidden>
+          <div class="settings-group">
+            <h3 class="settings-label">Подключение</h3>
+            <label class="field"><span>Режим API</span>
+              <select id="cfg-api-mode">
+                <option value="auto">Авто — с телефона, при сбое gateway</option>
+                <option value="direct">Только с телефона</option>
+                <option value="gateway">Только gateway (VPS)</option>
+              </select>
+            </label>
+            <p class="field-hint">Авто: Яндекс/VK/SC с телефона. Импорт плейлистов — через сервер.</p>
+          </div>
+          <div class="settings-group settings-group--server">
+            <h3 class="settings-label">Сервер Gateway</h3>
+            <p class="settings-hint">Сервер уже настроен. Нажми «Проверить сервер» — статус ниже.</p>
+            <input type="hidden" id="cfg-gateway" />
+            <input type="hidden" id="cfg-secret" />
+            <button type="button" class="primary-btn settings-test-btn" id="btn-test-gateway">Проверить сервер</button>
+            <div class="server-status" id="gateway-status-card" hidden>
+              <span class="server-status__icon" data-icon="check"></span>
+              <div class="server-status__body">
+                <div class="server-status__title" id="gateway-status-title">Сервер доступен</div>
+                <div class="server-status__sub" id="gateway-status-text">—</div>
+              </div>
+            </div>
+            <div class="server-status server-status--error" id="gateway-status-error" hidden>
+              <div class="server-status__body">
+                <div class="server-status__title">Нет связи</div>
+                <div class="server-status__sub" id="gateway-status-error-text">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3 class="settings-label">Подключение сервисов</h3>
+            <button type="button" class="service-row" data-service-open="yandex">
+              <img class="service-row__logo" src="assets/source-yandex-music.png" alt="" />
+              <span class="service-row__text"><span class="service-row__name">Яндекс Музыка</span><span class="service-row__state" id="svc-yandex-state">Не настроено</span></span>
+              <span data-icon="chevron-right" data-icon-class="ui-icon service-row__chev"></span>
+            </button>
+            <button type="button" class="service-row" data-service-open="vk">
+              <img class="service-row__logo service-row__logo--vk" src="assets/source-vk.png" alt="" />
+              <span class="service-row__text"><span class="service-row__name">VKontakte</span><span class="service-row__state" id="svc-vk-state">Не настроено</span></span>
+              <span data-icon="chevron-right" data-icon-class="ui-icon service-row__chev"></span>
+            </button>
+            <button type="button" class="service-row" data-service-open="soundcloud">
+              <img class="service-row__logo" src="assets/source-soundcloud.png" alt="" />
+              <span class="service-row__text"><span class="service-row__name">SoundCloud</span><span class="service-row__state" id="svc-sc-state">Опционально</span></span>
+              <span data-icon="chevron-right" data-icon-class="ui-icon service-row__chev"></span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="mini-player" id="mini-player" hidden>
+    <div class="mini-player__inner">
+      <button type="button" class="mini-player__main" id="mini-open-full">
+        <div class="mini-cover-wrap" id="mini-cover-wrap">
+          <img class="mini-cover" id="mini-cover" alt="" hidden />
+          <span data-icon="music-2" data-icon-class="ui-icon cover-ph"></span>
+        </div>
+        <div class="mini-meta">
+          <div class="scroll-title-wrap mini-title-wrap">
+            <div class="mini-title pixel-text scroll-title" id="mini-title">—</div>
+          </div>
+          <div class="mini-artist" id="mini-artist">—</div>
+        </div>
+      </button>
+      <div class="mini-controls" aria-label="Управление">
+        <button type="button" class="icon-btn icon-btn--sm mini-ctrl" id="mini-prev" data-icon="skip-back" aria-label="Назад"></button>
+        <button type="button" class="mini-play-btn" id="mini-play" aria-label="Play">
+          <span data-icon="play" data-icon-class="ui-icon"></span>
+        </button>
+        <button type="button" class="icon-btn icon-btn--sm mini-ctrl" id="mini-next" data-icon="skip-forward" aria-label="Вперёд"></button>
+      </div>
+    </div>
+  </footer>
+
+    <nav class="tab-bar" id="tab-bar">
+      <button type="button" class="tab tab--active" data-tab="home" data-icon="home"><span>Главная</span></button>
+      <button type="button" class="tab" data-tab="library" data-icon="library"><span>Библиотека</span></button>
+      <button type="button" class="tab" data-tab="settings" data-icon="settings"><span>Настройки</span></button>
+    </nav>
+
+  <div class="full-player" id="full-player" hidden>
+    <div class="full-player__ambient" id="full-player-ambient" aria-hidden="true">
+      <div class="fp-orb fp-orb--1"></div>
+      <div class="fp-orb fp-orb--2"></div>
+      <div class="fp-orb fp-orb--3"></div>
+    </div>
+    <div class="full-player__bg" id="full-bg">
+      <div class="full-player__bg-layer is-active" id="full-bg-a"></div>
+      <div class="full-player__bg-layer" id="full-bg-b"></div>
+    </div>
+    <div class="full-player__sheet">
+      <div class="fp-header">
+        <button type="button" class="icon-btn fp-header__btn" id="full-close" data-icon="x" aria-label="Закрыть"></button>
+        <div class="fp-header__pill" id="full-pill">
+          <span data-icon="audio-lines" data-icon-class="ui-icon"></span>
+          <span id="full-from">—</span>
+        </div>
+        <button type="button" class="icon-btn fp-header__btn" id="full-lyrics-btn" data-icon="mic" aria-label="Текст песни"></button>
+      </div>
+      <div class="fp-stack">
+      <div class="fp-lyrics-view" id="fp-lyrics-view" hidden>
+        <div class="fp-lyrics-scroll lyrics-content" id="fp-lyrics-content"></div>
+      </div>
+      <div class="fp-cover-block" id="fp-cover-block">
+        <div class="full-cover-wrap" id="full-cover-wrap">
+          <span class="full-cover-ph" data-icon="music-2" data-icon-class="ui-icon lg cover-ph"></span>
+          <img class="full-cover full-cover--layer is-active" id="full-cover-a" alt="" hidden />
+          <img class="full-cover full-cover--layer" id="full-cover-b" alt="" hidden />
+          <button type="button" class="fp-cover-btn fp-cover-btn--like" id="full-like" data-icon="heart" aria-label="Like"></button>
+          <button type="button" class="fp-cover-btn fp-cover-btn--add" id="full-add" data-icon="plus" aria-label="Добавить"></button>
+        </div>
+        <div class="fp-meta">
+          <div class="fp-title-wrap scroll-title-wrap" id="fp-title-wrap">
+            <span class="fp-title pixel-text scroll-title" id="full-title">—</span>
+          </div>
+          <p class="fp-artist" id="full-artist">—</p>
+        </div>
+        <div class="fp-wave-block" id="progress-row">
+          <div class="waveform" id="waveform" aria-hidden="true"></div>
+          <div class="fp-times">
+            <span class="time" id="time-current">0:00</span>
+            <span class="time" id="time-total">0:00</span>
+          </div>
+          <input type="range" class="seek seek--wave" id="seek" min="0" max="1000" value="0" />
+        </div>
+        <div class="fp-controls-panel">
+          <button type="button" class="icon-btn" id="full-shuffle" data-icon="shuffle" aria-label="Shuffle"></button>
+          <button type="button" class="icon-btn icon-btn--lg" id="full-prev" data-icon="skip-back"></button>
+          <button type="button" class="icon-btn icon-btn--xl" id="full-play" data-icon="play"></button>
+          <button type="button" class="icon-btn icon-btn--lg" id="full-next" data-icon="skip-forward"></button>
+          <button type="button" class="icon-btn" id="full-repeat" data-icon="repeat" aria-label="Repeat"></button>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="playlist-cover-input" accept="image/*" hidden />
+  <input type="file" id="player-cover-input" accept="image/*" hidden />
+
+  <div class="service-sheet" id="service-sheet" hidden>
+    <div class="service-sheet__scroll">
+      <div class="service-sheet__body">
+        <img class="service-sheet__logo" id="service-sheet-logo" src="" alt="" />
+        <div class="service-sc-fields" id="service-sc-fields" hidden>
+          <input type="hidden" id="service-sc-client-id" value="" />
+          <input type="hidden" id="service-sc-client-secret" value="" />
+        </div>
+        <label class="token-field" id="service-token-field">
+          <span class="token-field__label" id="service-token-label">Access Token</span>
+          <div class="token-field__wrap">
+            <input type="password" class="token-field__input" id="service-token-input" autocomplete="off" autocapitalize="off" />
+            <button type="button" class="token-field__eye" id="service-token-eye" data-icon="eye" aria-label="Показать"></button>
+          </div>
+        </label>
+        <button type="button" class="token-btn token-btn--oauth" id="service-sc-autoid" hidden>Найти Client ID автоматически</button>
+        <button type="button" class="token-btn token-btn--oauth-secondary" id="service-sc-oauth" hidden>OAuth (нужен Developer)</button>
+        <button type="button" class="token-btn token-btn--save" id="service-token-save">Сохранить</button>
+        <button type="button" class="token-btn token-btn--clear" id="service-token-clear">Очистить</button>
+        <a class="token-link" id="service-token-help" href="https://soundcloud.com/you/apps" target="_blank" rel="noopener" hidden>
+          <span data-icon="external-link" data-icon-class="ui-icon"></span>
+          <span id="service-token-help-text">Создать приложение SoundCloud</span>
+        </a>
+        <small class="field-hint token-status" id="service-token-status"></small>
+      </div>
+      <div class="service-sheet__footer">
+        <button type="button" class="token-btn token-btn--hide" id="service-sheet-hide">Скрыть</button>
+        <button type="button" class="token-btn token-btn--back" id="service-sheet-back">Назад</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="playlist-create-sheet" hidden>
+    <div class="sheet__backdrop" id="playlist-create-close"></div>
+    <div class="sheet__panel safe-bottom">
+      <h2 class="sheet__title" id="playlist-sheet-title">Новый плейлист</h2>
+      <button type="button" class="playlist-cover-pick" id="playlist-cover-pick">
+        <span class="playlist-cover-pick__ph" id="playlist-cover-preview" data-icon="image" data-icon-class="ui-icon lg"></span>
+        <span class="playlist-cover-pick__label">Выбрать обложку</span>
+      </button>
+      <label class="field"><span>Название</span><input type="text" id="playlist-create-name" placeholder="Мой плейлист" maxlength="80" /></label>
+      <button type="button" class="primary-btn" id="playlist-create-save">Создать</button>
+      <button type="button" class="link-btn sheet__cancel" id="playlist-create-cancel">Отмена</button>
+    </div>
+  </div>
+
+  <div class="import-flow" id="import-flow" hidden>
+    <div class="import-flow__viewport">
+      <section class="import-step import-step--active" id="import-step-hub" data-import-step="hub">
+        <header class="import-flow__head">
+          <h1 class="import-flow__title pixel-text">Импортировать из сервиса</h1>
+          <p class="import-flow__sub">Создайте плейлист или импортируйте из сервиса</p>
+        </header>
+        <div class="import-transfer" id="import-transfer">
+          <div class="import-transfer__logo import-transfer__logo--from">
+            <img id="import-logo-from" src="assets/source-yandex-music.png" alt="" />
+          </div>
+          <span class="import-transfer__arrow" data-icon="arrow-left-right" data-icon-class="ui-icon"></span>
+          <div class="import-transfer__logo import-transfer__logo--to">
+            <img src="assets/nexory-icon.png" alt="Nexory" />
+          </div>
+        </div>
+        <div class="import-menu">
+          <button type="button" class="import-menu__item" id="import-btn-profile">
+            <span class="import-menu__icon" data-icon="user" data-icon-class="ui-icon"></span>
+            <span class="import-menu__text">
+              <span class="import-menu__title pixel-text">Импорт профиля</span>
+              <span class="import-menu__hint">Скоро</span>
+            </span>
+            <span class="import-menu__chev" data-icon="chevron-right" data-icon-class="ui-icon"></span>
+          </button>
+          <button type="button" class="import-menu__item" id="import-btn-link-step">
+            <span class="import-menu__icon" data-icon="list-music" data-icon-class="ui-icon"></span>
+            <span class="import-menu__text">
+              <span class="import-menu__title pixel-text">Импортировать из сервиса</span>
+              <span class="import-menu__hint">Ссылка на плейлист</span>
+            </span>
+            <span class="import-menu__chev" data-icon="chevron-right" data-icon-class="ui-icon"></span>
+          </button>
+        </div>
+        <button type="button" class="import-flow__back pixel-text" id="import-flow-close">Назад</button>
+      </section>
+
+      <section class="import-step" id="import-step-link" data-import-step="link" hidden>
+        <header class="import-flow__head">
+          <h1 class="import-flow__title pixel-text">Импортировать из сервиса</h1>
+          <p class="import-flow__sub" id="import-link-sub">Ссылка на плейлист</p>
+        </header>
+        <div class="import-link-hero" id="import-link-hero">
+          <div class="import-link-hero__icon import-link-hero__icon--idle" data-icon="list-music" data-icon-class="ui-icon lg"></div>
+          <div class="import-link-hero__logo" id="import-link-hero-logo" hidden>
+            <img id="import-link-hero-img" src="" alt="" />
+          </div>
+        </div>
+        <div class="import-link-actions">
+          <label class="import-link-field">
+            <span class="import-link-field__icon" data-icon="link" data-icon-class="ui-icon"></span>
+            <input type="url" class="import-link-field__input pixel-text" id="import-link-input" placeholder="Ссылка на плейлист" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" />
+            <span class="import-link-field__badge" id="import-link-badge" hidden>
+              <img id="import-link-badge-img" src="" alt="" />
+            </span>
+          </label>
+          <button type="button" class="import-btn import-btn--primary pixel-text" id="import-btn-load" disabled>
+            <span data-icon="chevron-right" data-icon-class="ui-icon"></span>
+            Загрузить
+          </button>
+          <button type="button" class="import-btn import-btn--ghost pixel-text" id="import-btn-file">
+            <span data-icon="file-up" data-icon-class="ui-icon"></span>
+            Импорт из файла
+          </button>
+          <div class="import-progress import-progress--flow" id="import-progress" hidden>
+            <p class="import-progress__text" id="import-progress-text">Проверка…</p>
+            <div class="import-progress__bar"><span id="import-progress-fill"></span></div>
+            <ul class="import-failures" id="import-failures"></ul>
+          </div>
+          <button type="button" class="import-flow__back pixel-text" id="import-link-back">Назад</button>
+        </div>
+      </section>
+
+      <section class="import-step" id="import-step-dest" data-import-step="dest" hidden>
+        <div class="import-dest-hero">
+          <div class="import-dest-cover" id="import-dest-cover">
+            <span class="import-dest-cover__ph" data-icon="list-music" data-icon-class="ui-icon lg"></span>
+            <img id="import-dest-cover-img" alt="" hidden />
+          </div>
+          <h2 class="import-dest-title pixel-text" id="import-dest-title">—</h2>
+          <p class="import-dest-count pixel-text" id="import-dest-count">0 треков</p>
+        </div>
+        <div class="import-dest-list" id="import-dest-list" role="radiogroup" aria-label="Куда импортировать"></div>
+        <button type="button" class="import-btn import-btn--confirm pixel-text" id="import-btn-confirm">Подтвердить</button>
+        <button type="button" class="import-flow__back import-flow__back--inline pixel-text" id="import-dest-back">
+          <span data-icon="chevron-left" data-icon-class="ui-icon"></span>
+          Назад
+        </button>
+      </section>
+    </div>
+  </div>
+  <input type="file" id="import-file-input" accept=".json,application/json,text/plain" hidden />
+
+  <div class="playlist-view" id="playlist-view" hidden>
+    <div class="pl-view-hero" id="playlist-view-hero">
+      <div class="pl-view-hero__bg" id="pl-view-hero-bg"></div>
+      <div class="pl-view-hero__shade"></div>
+      <div class="pl-view-hero__top">
+        <button type="button" class="icon-btn pl-view-back" id="playlist-view-back" data-icon="chevron-left" aria-label="Назад"></button>
+        <button type="button" class="icon-btn pl-view-edit" id="playlist-view-edit" data-icon="pencil" aria-label="Редактировать" hidden></button>
+      </div>
+      <div class="pl-view-hero__content">
+        <h1 class="pl-view-title" id="playlist-view-title">Плейлист</h1>
+        <p class="pl-view-count" id="playlist-view-count"></p>
+        <div class="pl-view-actions">
+          <button type="button" class="pl-view-play" id="playlist-view-play">
+            <span data-icon="play" data-icon-class="ui-icon"></span>
+            <span>Воспроизвести</span>
+          </button>
+          <button type="button" class="icon-btn pl-view-shuffle" id="playlist-view-shuffle" data-icon="shuffle" aria-label="Перемешать"></button>
+        </div>
+      </div>
+    </div>
+    <div class="pl-view-body">
+      <div class="pl-view-body__curve" aria-hidden="true">
+        <svg viewBox="0 0 390 32" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,0 Q195,16 390,0 L390,24 L0,24 Z" fill="#050508"/>
+        </svg>
+      </div>
+      <div class="pl-view-tracks" id="playlist-view-tracks" data-track-list></div>
+    </div>
+  </div>
+
+  <div class="sheet" id="pick-playlist-sheet" hidden>
+    <div class="sheet__backdrop" id="pick-playlist-close"></div>
+    <div class="sheet__panel safe-bottom">
+      <h2 class="sheet__title">Добавить в плейлист</h2>
+      <p class="sheet__hint" id="pick-playlist-track">—</p>
+      <div class="pick-playlist-list" id="pick-playlist-list"></div>
+      <button type="button" class="link-btn sheet__cancel" id="pick-playlist-cancel">Отмена</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="track-actions-sheet" hidden>
+    <div class="sheet__backdrop" id="track-actions-close"></div>
+    <div class="sheet__panel safe-bottom">
+      <h2 class="sheet__title" id="track-actions-title">Трек</h2>
+      <p class="sheet__hint" id="track-actions-sub">—</p>
+      <button type="button" class="pl-action pl-action--danger" id="track-action-remove">
+        <span data-icon="trash-2" data-icon-class="ui-icon"></span><span>Удалить из плейлиста</span>
+      </button>
+      <button type="button" class="link-btn sheet__cancel" id="track-actions-cancel">Отмена</button>
+    </div>
+  </div>
+
+  <div class="sheet" id="playlist-actions-sheet" hidden>
+    <div class="sheet__backdrop" id="playlist-actions-close"></div>
+    <div class="sheet__panel sheet__panel--actions safe-bottom">
+      <div class="pl-actions-head">
+        <div class="pl-actions-head__meta">
+          <div class="pl-actions-head__name" id="pl-actions-name">—</div>
+          <div class="pl-actions-head__count" id="pl-actions-count">0 треков</div>
+        </div>
+        <div class="pl-actions-head__icon" id="pl-actions-icon" data-icon="library" data-icon-class="ui-icon"></div>
+      </div>
+      <div class="pl-actions-group">
+        <button type="button" class="pl-action" id="pl-action-play"><span data-icon="play" data-icon-class="ui-icon"></span><span>Воспроизвести</span></button>
+        <button type="button" class="pl-action" id="pl-action-shuffle"><span data-icon="shuffle" data-icon-class="ui-icon"></span><span>Перемешать</span></button>
+        <button type="button" class="pl-action" id="pl-action-wave"><span data-icon="audio-lines" data-icon-class="ui-icon"></span><span>Волна по плейлисту</span></button>
+      </div>
+      <div class="pl-actions-group">
+        <button type="button" class="pl-action" id="pl-action-edit"><span data-icon="pencil" data-icon-class="ui-icon"></span><span>Редактировать</span></button>
+      </div>
+      <div class="pl-actions-group">
+        <button type="button" class="pl-action pl-action--danger" id="pl-action-delete"><span data-icon="trash-2" data-icon-class="ui-icon"></span><span>Удалить</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet sheet--list" id="recent-sheet" hidden>
+    <div class="sheet__backdrop" id="recent-sheet-close" aria-hidden="true"></div>
+    <div class="sheet__panel sheet__panel--list sheet__panel--recent safe-bottom">
+      <div class="sheet__grabber" aria-hidden="true"></div>
+      <h2 class="sheet__title sheet__title--pixel">Недавние</h2>
+      <div class="sheet-list v-list v-list--tracks" id="recent-sheet-list" data-track-list></div>
+    </div>
+  </div>
+
+  <div class="sheet" id="search-source-sheet" hidden>
+    <div class="sheet__backdrop" id="search-source-backdrop"></div>
+    <div class="sheet__panel safe-bottom">
+      <h2 class="sheet__title">Источник поиска</h2>
+      <div class="source-picker" id="search-source-picker" role="listbox"></div>
+      <button type="button" class="link-btn sheet__cancel" id="search-source-cancel">Отмена</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <audio id="audio" preload="auto" playsinline webkit-playsinline></audio>
+
+  <script src="js/icons.js"></script>
+  <script src="js/viewport.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/http.js"></script>
+  <script src="js/bridge.js"></script>
+  <script src="js/direct-api.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/lyrics.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

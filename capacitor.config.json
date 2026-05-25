@@ -1,0 +1,15 @@
+{
+  "appId": "app.nexory.mobile",
+  "appName": "Nexory",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "capacitor"
+  },
+  "android": {
+    "backgroundColor": "#020617",
+    "allowMixedContent": true,
+    "captureInput": true
+  },
+  "plugins": {}
+}

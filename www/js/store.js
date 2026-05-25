@@ -1,0 +1,261 @@
+const Store = (() => {
+  const KEY = 'nexory_mobile_v1'
+
+  function load() {
+    try {
+      return JSON.parse(localStorage.getItem(KEY) || '{}') || {}
+    } catch {
+      return {}
+    }
+  }
+
+  function save(data) {
+    localStorage.setItem(KEY, JSON.stringify(data))
+  }
+
+  function defaults() {
+    return {
+      apiMode: 'auto',
+      gatewayUrl: typeof NexoryConfig !== 'undefined' ? NexoryConfig.DEFAULT_SERVER_URL : '',
+      gatewaySecret: typeof NexoryConfig !== 'undefined' ? NexoryConfig.DEFAULT_SERVER_SECRET : '',
+      yandexToken: '',
+      vkToken: '',
+      scClientId: '',
+      scClientSecret: '',
+      scAccessToken: '',
+      waveSource: 'yandex',
+      waveMood: 'default',
+      likes: [],
+      recent: [],
+      playlists: [],
+      yandexRotor: null,
+      theme: 'dark',
+      accentFromCover: false,
+      accentCoverHex: '',
+      accentCoverPalette: null,
+      playerCoverOverride: '',
+      playerBgOverride: '',
+      playerBgPreset: '',
+      bgBlur: 56,
+      bgBrightness: 45,
+      listenSeconds: 0,
+      listenTrackCount: 0,
+    }
+  }
+
+  function get() {
+    const d = defaults()
+    const merged = { ...d, ...load() }
+    if (!String(merged.gatewayUrl || '').trim() && d.gatewayUrl) merged.gatewayUrl = d.gatewayUrl
+    if (!String(merged.gatewaySecret || '').trim() && d.gatewaySecret) merged.gatewaySecret = d.gatewaySecret
+    if (!merged.waveMood) merged.waveMood = 'default'
+    return merged
+  }
+
+  function patch(partial) {
+    const next = { ...get(), ...partial }
+    try {
+      save(next)
+    } catch (e) {
+      if (e && (e.name === 'QuotaExceededError' || /quota/i.test(String(e.message || e)))) {
+        throw new Error('Память приложения переполнена. Удали старые обложки плейлистов или импортируй меньше JSON.')
+      }
+      throw e
+    }
+    return next
+  }
+
+  function normalizeSource(source) {
+    const s = String(source || '').trim().toLowerCase()
+    if (s === 'ya' || s === 'ym' || s === 'yandex_music') return 'yandex'
+    if (s === 'vk' || s === 'vkontakte') return 'vk'
+    if (s === 'sc' || s === 'soundcloud') return 'soundcloud'
+    return s
+  }
+
+  function normalizeTrack(track) {
+    if (!track || typeof track !== 'object') return null
+    const t = { ...track }
+    t.source = normalizeSource(t.source)
+    if (!t.id) {
+      t.id = t.trackId || t.track_id || t.yandexId || t.vkAudioId || t.audioId || t.oid || ''
+    }
+    t.id = String(t.id || '').trim()
+    if (!t.id && t.url) t.id = String(t.url)
+    if (!t.source || !t.id) return null
+    t.title = String(t.title || t.name || 'Без названия').trim() || 'Без названия'
+    let artist = t.artist ?? t.artists ?? t.author ?? '—'
+    if (Array.isArray(artist)) artist = artist.map((a) => (typeof a === 'string' ? a : a?.name)).filter(Boolean).join(', ')
+    t.artist = String(artist || '—').trim() || '—'
+    const ms = Number(t.durationMs ?? t.duration_ms)
+    if (Number.isFinite(ms) && ms > 0) t.durationMs = ms
+    else {
+      const d = Number(t.duration)
+      if (Number.isFinite(d) && d > 0) t.durationMs = d > 36000 ? d : d * 1000
+    }
+    if (!t.cover) t.cover = t.coverUrl || t.cover_uri || t.albumCover || t.thumbnail || ''
+    if (t.source === 'yandex' && t.url) delete t.url
+    if (t.source === 'soundcloud') {
+      if (!t.scClientId && get().scClientId) t.scClientId = get().scClientId
+      if (!t.scAccessToken && get().scAccessToken) t.scAccessToken = get().scAccessToken
+      if (t.sc_transcoding && !t.scTranscoding) t.scTranscoding = t.sc_transcoding
+      const link = String(t.url || t.permalink_url || t.permalink || t.id || '')
+      const num =
+        (/^\d+$/.test(String(t.id)) ? String(t.id) : null) ||
+        (link.match(/soundcloud\.com\/tracks\/(\d+)/i) || [])[1] ||
+        (link.match(/api-v2\.soundcloud\.com\/tracks\/(\d+)/i) || [])[1] ||
+        (String(t.id).match(/(\d{6,})/) || [])[1]
+      if (num) t.id = num
+      if (!t.scTranscoding) delete t.url
+    }
+    return t
+  }
+
+  function normalizeTracks(tracks) {
+    return (Array.isArray(tracks) ? tracks : [])
+      .map((tr) => normalizeTrack(tr))
+      .filter(Boolean)
+  }
+
+  function trackKey(t) {
+    if (!t) return ''
+    const n = normalizeTrack(t)
+    const src = n?.source || normalizeSource(t.source)
+    const id = n?.id || String(t.id || '').trim()
+    return `${src}:${id}`
+  }
+
+  function isLiked(track) {
+    const k = trackKey(track)
+    return get().likes.some((x) => trackKey(x) === k)
+  }
+
+  function toggleLike(track) {
+    const s = get()
+    const k = trackKey(track)
+    const has = s.likes.some((x) => trackKey(x) === k)
+    const likes = has ? s.likes.filter((x) => trackKey(x) !== k) : [{ ...track, likedAt: Date.now() }, ...s.likes]
+    return patch({ likes })
+  }
+
+  function pushRecent(track) {
+    const s = get()
+    const k = trackKey(track)
+    const recent = [{ ...track, playedAt: Date.now() }, ...s.recent.filter((x) => trackKey(x) !== k)].slice(0, 40)
+    return patch({
+      recent,
+      listenTrackCount: Math.max(0, Number(s.listenTrackCount) || 0) + 1,
+    })
+  }
+
+  function addListenSeconds(delta) {
+    const sec = Math.max(0, Number(delta) || 0)
+    if (sec < 0.25) return get()
+    const s = get()
+    return patch({ listenSeconds: Math.max(0, Number(s.listenSeconds) || 0) + sec })
+  }
+
+  function setRotor(meta) {
+    return patch({ yandexRotor: meta })
+  }
+
+  function addPlaylist(name, tracks = [], coverData = '') {
+    const s = get()
+    const pl = {
+      id: `pl_${Date.now()}`,
+      name: String(name || 'Плейлист').trim(),
+      tracks: normalizeTracks(tracks),
+      coverData: String(coverData || ''),
+    }
+    return patch({ playlists: [pl, ...s.playlists] })
+  }
+
+  function importPlaylists(items) {
+    const s = get()
+    const incoming = (Array.isArray(items) ? items : [])
+      .map((pl) => ({
+        id: pl.id || `pl_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        name: String(pl.name || 'Плейлист').trim(),
+        tracks: normalizeTracks(pl.tracks),
+        coverData: String(pl.coverData || pl.cover || ''),
+        description: pl.description || '',
+      }))
+      .filter((p) => p.name)
+    if (!incoming.length) return s
+    return patch({ playlists: [...incoming, ...s.playlists] })
+  }
+
+  function getPlaylist(id) {
+    return get().playlists.find((p) => p.id === id) || null
+  }
+
+  function updatePlaylist(id, changes) {
+    const s = get()
+    const playlists = s.playlists.map((p) => {
+      if (p.id !== id) return p
+      const next = {
+        ...p,
+        ...changes,
+        name: changes.name != null ? String(changes.name).trim() || p.name : p.name,
+      }
+      if (changes.coverData != null) next.coverData = String(changes.coverData)
+      return next
+    })
+    return patch({ playlists })
+  }
+
+  function deletePlaylist(id) {
+    const s = get()
+    return patch({ playlists: s.playlists.filter((p) => p.id !== id) })
+  }
+
+  function addTrackToPlaylist(playlistId, track) {
+    if (!track) return get()
+    const s = get()
+    const k = trackKey(track)
+    const playlists = s.playlists.map((p) => {
+      if (p.id !== playlistId) return p
+      if (p.tracks.some((t) => trackKey(t) === k)) return p
+      return { ...p, tracks: [...p.tracks, { ...track }] }
+    })
+    return patch({ playlists })
+  }
+
+  function removeTrackFromPlaylist(playlistId, key) {
+    const s = get()
+    const playlists = s.playlists.map((p) => {
+      if (p.id !== playlistId) return p
+      return { ...p, tracks: p.tracks.filter((t) => trackKey(t) !== key) }
+    })
+    return patch({ playlists })
+  }
+
+  function mergeLikes(tracks) {
+    const s = get()
+    const norm = normalizeTracks(tracks)
+    if (!norm.length) return s
+    const likes = [...s.likes]
+    for (const t of norm) {
+      const k = trackKey(t)
+      if (!likes.some((x) => trackKey(x) === k)) {
+        likes.unshift({ ...t, likedAt: Date.now() })
+      }
+    }
+    return patch({ likes })
+  }
+
+  function setPlaylistTracks(playlistId, tracks) {
+    const s = get()
+    const playlists = s.playlists.map((p) => {
+      if (p.id !== playlistId) return p
+      return { ...p, tracks: normalizeTracks(tracks) }
+    })
+    return patch({ playlists })
+  }
+
+  return {
+    get, patch, trackKey, normalizeTrack, normalizeTracks, isLiked, toggleLike, pushRecent, addListenSeconds, setRotor,
+    addPlaylist, importPlaylists, mergeLikes, getPlaylist, updatePlaylist, deletePlaylist, addTrackToPlaylist,
+    removeTrackFromPlaylist, setPlaylistTracks,
+  }
+})()
