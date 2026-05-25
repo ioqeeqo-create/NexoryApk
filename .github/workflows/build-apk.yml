@@ -54,6 +54,9 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: Nexory Android v1.0.${{ github.run_number }}
+          body: |
+            Сборка только для Android (APK).
+            iOS: https://github.com/ioqeeqo-create/NexoryIos/releases
           files: build/Nexory.apk
           make_latest: true
           generate_release_notes: false
