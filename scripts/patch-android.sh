@@ -10,7 +10,7 @@ if [ ! -f "$MANIFEST" ]; then
   exit 0
 fi
 
-python3 <<'PY' "$MANIFEST"
+python3 - "$MANIFEST" <<'PY'
 import sys
 from pathlib import Path
 
