@@ -1985,12 +1985,12 @@ html.cover-theme-lit .fp-orb--1 {
   height: min(480px, 105vw);
 }
 html.cover-theme-lit .fp-orb--2 {
-  background: var(--player-glow-2, rgba(168, 85, 247, 0.28));
+  background: var(--player-glow-2, color-mix(in srgb, var(--playback-accent-2) 28%, transparent));
   right: 4%;
   bottom: 10%;
 }
 html.cover-theme-lit .fp-orb--3 {
-  background: var(--player-glow-3, rgba(236, 72, 153, 0.22));
+  background: var(--player-glow-3, color-mix(in srgb, var(--playback-accent) 22%, transparent));
   left: 2%;
   bottom: 26%;
 }
